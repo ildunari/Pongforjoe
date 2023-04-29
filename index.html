@@ -1,17 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
     canvas {
       border: 1px solid black;
+    }
+
+    button {
+      font-size: 18px;
+    }
+
+    /* Default styles for larger screens */
+    canvas {
+      width: 600px;
+      height: 400px;
+    }
+
+    button {
+      width: 80px;
+      height: 80px;
+    }
+
+    /* Styles for smaller screens */
+    @media (max-width: 600px) {
+      canvas {
+        width: 300px;
+        height: 200px;
+      }
+
+      button {
+        width: 60px;
+        height: 60px;
+      }
     }
   </style>
 </head>
 <body>
   <canvas id="canvas" width="600" height="400"></canvas>
-<button id="up" style="position: absolute; left: 20px; bottom: 20px; width: 80px; height: 80px;">Up</button>
-<button id="down" style="position: absolute; right: 20px; bottom: 20px; width: 80px; height: 80px;">Down</button>
+  <div>
+    <button id="up" style="position: absolute; left: 20px; bottom: 20px;">Up</button>
+    <button id="down" style="position: absolute; right: 20px; bottom: 20px;">Down</button>
+  </div>
   <script>
+    // The rest of the script remains unchanged
     // Get the canvas element and its context
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
@@ -67,31 +108,30 @@
       keys[e.keyCode] = false;
     });
 
-	// Get the buttons by their id
-	var upButton = document.getElementById("up");
-	var downButton = document.getElementById("down");
+    // Get the buttons by their id
+    var upButton = document.getElementById("up");
+    var downButton = document.getElementById("down");
 
-	// Define flags to indicate whether the buttons are pressed or not
-	var upPressed = false;
-	var downPressed = false;
+    // Define flags to indicate whether the buttons are pressed or not
+    var upPressed = false;
+    var downPressed = false;
 
-	// Add event listeners for touchstart and touchend events
-	upButton.addEventListener("touchstart", function() {
-  	upPressed = true;
-	});
+    // Add event listeners for touchstart and touchend events
+        upButton.addEventListener("touchstart", function() {
+      upPressed = true;
+    });
 
-	upButton.addEventListener("touchend", function() {
-  upPressed = false;
-	});
+    upButton.addEventListener("touchend", function() {
+      upPressed = false;
+    });
 
-	downButton.addEventListener("touchstart", function() {
-	downPressed = true;
-	});
+    downButton.addEventListener("touchstart", function() {
+      downPressed = true;
+    });
 
-	downButton.addEventListener("touchend", function() {
-  	downPressed = false;
-	});
-
+    downButton.addEventListener("touchend", function() {
+      downPressed = false;
+    });
 
     // Define a function to draw a rectangle
     function drawRect(x, y, width, height, color) {
@@ -116,21 +156,14 @@
 
     // Define a function to update the game logic
     function update() {
-      // Move the paddle according to the pressed keys
-		// Move the paddle according to the flags
-		if (upPressed) {
-	  	paddle1.y -= PADDLE_SPEED;
-		}
-		if (downPressed) {
-  		paddle1.y += PADDLE_SPEED;
-		}
-      if (keys[UP_ARROW]) {
+      // Move the paddle according to the pressed keys or buttons
+      if (keys[UP_ARROW] || upPressed) {
         paddle1.y -= PADDLE_SPEED;
       }
-      if (keys[DOWN_ARROW]) {
+      if (keys[DOWN_ARROW] || downPressed) {
         paddle1.y += PADDLE_SPEED;
       }
-	
+
       // Prevent the paddle from going out of bounds
       if (paddle1.y < 0) {
         paddle1.y = 0;
@@ -174,7 +207,7 @@
         paddle2.score++;
         ball.x = canvas.width / 2;
         ball.y = canvas.height / 2;
-        ball.speedX = BALL_SPEED;
+                ball.speedX = -BALL_SPEED; // Reverse the direction of the ball
         ball.speedY = BALL_SPEED;
       }
 
@@ -182,30 +215,13 @@
         paddle1.score++;
         ball.x = canvas.width / 2;
         ball.y = canvas.height / 2;
-        ball.speedX = -BALL_SPEED;
+        ball.speedX = BALL_SPEED;
         ball.speedY = BALL_SPEED;
-      }
-
-      // Move the paddle 2 using a simple AI
-      // The paddle will try to follow the ball's y position
-      if (ball.y < paddle2.y + paddle2.height / 2) {
-        paddle2.y -= PADDLE_SPEED;
-      }
-      if (ball.y > paddle2.y + paddle2.height / 2) {
-        paddle2.y += PADDLE_SPEED;
-      }
-
-      // Prevent the paddle from going out of bounds
-      if (paddle2.y < 0) {
-        paddle2.y = 0;
-      }
-      if (paddle2.y + paddle2.height > canvas.height) {
-        paddle2.y = canvas.height - paddle2.height;
       }
     }
 
-    // Define a function to render the game graphics
-    function render() {
+    // Define a function to draw the game objects
+    function draw() {
       // Clear the canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -216,16 +232,16 @@
       // Draw the ball
       drawCircle(ball.x, ball.y, ball.radius, ball.color);
 
-      // Draw the score
-      drawScore(canvas.width / 4, 50, paddle1.score);
-      drawScore(canvas.width * 3 / 4, 50, paddle2.score);
+      // Draw the scores
+      drawScore(100, 50, paddle1.score);
+      drawScore(canvas.width - 150, 50, paddle2.score);
     }
 
     // Define a function to run the game loop
     function gameLoop() {
       update();
-      render();
-      requestAnimationFrame(gameLoop); // Call this function again on the next frame
+      draw();
+      requestAnimationFrame(gameLoop);
     }
 
     // Start the game loop
@@ -233,4 +249,5 @@
   </script>
 </body>
 </html>
+
 
