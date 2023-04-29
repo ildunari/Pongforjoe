@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="600" height="400"></canvas>
+<button id="up" style="position: absolute; left: 20px; bottom: 20px; width: 80px; height: 80px;">Up</button>
+<button id="down" style="position: absolute; right: 20px; bottom: 20px; width: 80px; height: 80px;">Down</button>
+  <script>
+    // Get the canvas element and its context
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    // Define some constants
+    var PADDLE_WIDTH = 10;
+    var PADDLE_HEIGHT = 80;
+    var PADDLE_SPEED = 5;
+    var BALL_RADIUS = 10;
+    var BALL_SPEED = 4;
+
+    // Define the game objects
+    var paddle1 = {
+      x: 0,
+      y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+      width: PADDLE_WIDTH,
+      height: PADDLE_HEIGHT,
+      color: "blue",
+      score: 0
+    };
+
+    var paddle2 = {
+      x: canvas.width - PADDLE_WIDTH,
+      y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+      width: PADDLE_WIDTH,
+      height: PADDLE_HEIGHT,
+      color: "red",
+      score: 0
+    };
+
+    var ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: BALL_RADIUS,
+      color: "green",
+      speedX: BALL_SPEED,
+      speedY: BALL_SPEED
+    };
+
+    // Define the key codes for up and down arrows
+    var UP_ARROW = 38;
+    var DOWN_ARROW = 40;
+
+    // Keep track of which keys are pressed
+    var keys = {};
+
+    // Add event listeners for keydown and keyup events
+    document.addEventListener("keydown", function(e) {
+      keys[e.keyCode] = true;
+    });
+
+    document.addEventListener("keyup", function(e) {
+      keys[e.keyCode] = false;
+    });
+
+	// Get the buttons by their id
+	var upButton = document.getElementById("up");
+	var downButton = document.getElementById("down");
+
+	// Define flags to indicate whether the buttons are pressed or not
+	var upPressed = false;
+	var downPressed = false;
+
+	// Add event listeners for touchstart and touchend events
+	upButton.addEventListener("touchstart", function() {
+  	upPressed = true;
+	});
+
+	upButton.addEventListener("touchend", function() {
+  upPressed = false;
+	});
+
+	downButton.addEventListener("touchstart", function() {
+	downPressed = true;
+	});
+
+	downButton.addEventListener("touchend", function() {
+  	downPressed = false;
+	});
+
+
+    // Define a function to draw a rectangle
+    function drawRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+    }
+
+    // Define a function to draw a circle
+    function drawCircle(x, y, radius, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Define a function to draw the score
+    function drawScore(x, y, score) {
+      ctx.fillStyle = "black";
+      ctx.font = "32px Arial";
+      ctx.fillText(score, x, y);
+    }
+
+    // Define a function to update the game logic
+    function update() {
+      // Move the paddle according to the pressed keys
+		// Move the paddle according to the flags
+		if (upPressed) {
+	  	paddle1.y -= PADDLE_SPEED;
+		}
+		if (downPressed) {
+  		paddle1.y += PADDLE_SPEED;
+		}
+      if (keys[UP_ARROW]) {
+        paddle1.y -= PADDLE_SPEED;
+      }
+      if (keys[DOWN_ARROW]) {
+        paddle1.y += PADDLE_SPEED;
+      }
+	
+      // Prevent the paddle from going out of bounds
+      if (paddle1.y < 0) {
+        paddle1.y = 0;
+      }
+      if (paddle1.y + paddle1.height > canvas.height) {
+        paddle1.y = canvas.height - paddle1.height;
+      }
+
+      // Move the ball according to its speed
+      ball.x += ball.speedX;
+      ball.y += ball.speedY;
+
+      // Bounce the ball off the top and bottom edges
+      if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+        ball.speedY *= -1;
+      }
+
+      // Bounce the ball off the paddles
+      if (ball.x - ball.radius < paddle1.x + paddle1.width && 
+          ball.y > paddle1.y && 
+          ball.y < paddle1.y + paddle1.height) {
+        ball.speedX *= -1;
+        ball.x = paddle1.x + paddle1.width + ball.radius; // Prevent the ball from getting stuck inside the paddle
+        ball.speedY += Math.random() * 2 - 1; // Add some randomness to the bounce angle
+        ball.speedX *= 1.05; // Increase the ball speed slightly after each bounce
+        ball.speedY *= 1.05;
+      }
+
+      if (ball.x + ball.radius > paddle2.x && 
+          ball.y > paddle2.y && 
+          ball.y < paddle2.y + paddle2.height) {
+        ball.speedX *= -1;
+        ball.x = paddle2.x - ball.radius; // Prevent the ball from getting stuck inside the paddle
+        ball.speedY += Math.random() * 2 - 1; // Add some randomness to the bounce angle
+        ball.speedX *= 1.05; // Increase the ball speed slightly after each bounce
+        ball.speedY *= 1.05;
+      }
+
+      // Reset the ball and update the score if it goes out of bounds
+      if (ball.x - ball.radius < 0) {
+        paddle2.score++;
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.speedX = BALL_SPEED;
+        ball.speedY = BALL_SPEED;
+      }
+
+      if (ball.x + ball.radius > canvas.width) {
+        paddle1.score++;
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.speedX = -BALL_SPEED;
+        ball.speedY = BALL_SPEED;
+      }
+
+      // Move the paddle 2 using a simple AI
+      // The paddle will try to follow the ball's y position
+      if (ball.y < paddle2.y + paddle2.height / 2) {
+        paddle2.y -= PADDLE_SPEED;
+      }
+      if (ball.y > paddle2.y + paddle2.height / 2) {
+        paddle2.y += PADDLE_SPEED;
+      }
+
+      // Prevent the paddle from going out of bounds
+      if (paddle2.y < 0) {
+        paddle2.y = 0;
+      }
+      if (paddle2.y + paddle2.height > canvas.height) {
+        paddle2.y = canvas.height - paddle2.height;
+      }
+    }
+
+    // Define a function to render the game graphics
+    function render() {
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the paddles
+      drawRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height, paddle1.color);
+      drawRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height, paddle2.color);
+
+      // Draw the ball
+      drawCircle(ball.x, ball.y, ball.radius, ball.color);
+
+      // Draw the score
+      drawScore(canvas.width / 4, 50, paddle1.score);
+      drawScore(canvas.width * 3 / 4, 50, paddle2.score);
+    }
+
+    // Define a function to run the game loop
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop); // Call this function again on the next frame
+    }
+
+    // Start the game loop
+    gameLoop();
+  </script>
+</body>
+</html>
+
