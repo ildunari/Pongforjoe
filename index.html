@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
       display: flex;
@@ -140,6 +140,21 @@ downButton.addEventListener("touchstart", function() {
 });
 
 downButton.addEventListener("touchend", function() {
+  keys[DOWN_ARROW] = false;
+});
+    upButton.addEventListener("mousedown", function() {
+  keys[UP_ARROW] = true;
+});
+
+upButton.addEventListener("mouseup", function() {
+  keys[UP_ARROW] = false;
+});
+
+downButton.addEventListener("mousedown", function() {
+  keys[DOWN_ARROW] = true;
+});
+
+downButton.addEventListener("mouseup", function() {
   keys[DOWN_ARROW] = false;
 });
 
