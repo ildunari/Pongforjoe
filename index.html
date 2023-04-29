@@ -111,7 +111,8 @@
     });
 
     // Get the buttons by their id
-        var downButton = document.getElementById("down");
+    var upButton = document.getElementById("up");
+    var downButton = document.getElementById("down");
 
     // Define flags to indicate whether the buttons are pressed or not
     var upPressed = false;
@@ -154,103 +155,90 @@
       ctx.font = "32px Arial";
       ctx.fillText(score, x, y);
     }
-
-    // Define a function to update the game logic
+    // Define a function to update the game objects
     function update() {
-      // Move the paddle1 according to the pressed keys or buttons
-      if (keys[W_KEY] || upPressed) {
-        paddle1.y -= PADDLE_SPEED;
-      }
-      if (keys[S_KEY] || downPressed) {
-        paddle1.y += PADDLE_SPEED;
-      }
+      
+      // Update the paddle1 position
+      if (ball.speedX < 0) {
+      if (paddle1.y + PADDLE_HEIGHT / 2 < ball.y - PADDLE_HEIGHT / 4) {
+      paddle1.y += PADDLE_SPEED;
+    } else if (paddle1.y + PADDLE_HEIGHT / 2 > ball.y + PADDLE_HEIGHT / 4) {
+      paddle1.y -= PADDLE_SPEED;
+    }
+  }
 
-      // Move the paddle2 according to the pressed keys
-      if (keys[UP_ARROW]) {
-        paddle2.y -= PADDLE_SPEED;
-      }
-      if (keys[DOWN_ARROW]) {
-        paddle2.y += PADDLE_SPEED;
-      }
 
-      // Prevent the paddles from going out of bounds
-      if (paddle1.y < 0) {
-        paddle1.y = 0;
-      }
-      if (paddle1.y + paddle1.height > canvas.height) {
-        paddle1.y = canvas.height - paddle1.height;
-      }
+      // Update the paddle2 position
+      if ((keys[UP_ARROW] || keys[W_KEY]) && paddle2.y > 0) {
+    paddle2.y -= PADDLE_SPEED;
+  }
+  if ((keys[DOWN_ARROW] || keys[S_KEY]) && paddle2.y < canvas.height - PADDLE_HEIGHT) {
+    paddle2.y += PADDLE_SPEED;
+  }
 
-      if (paddle2.y < 0) {
-        paddle2.y = 0;
-      }
-      if (paddle2.y + paddle2.height > canvas.height) {
-        paddle2.y = canvas.height - paddle2.height;
-      }
-
-      // Move the ball according to its speed
+      // Update the ball position
       ball.x += ball.speedX;
       ball.y += ball.speedY;
 
-      // Bounce the ball off the top and bottom edges
-      if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-        ball.speedY *= -1;
+      // Check for collisions with the paddles
+      if (ball.y > paddle1.y - BALL_RADIUS && ball.y < paddle1.y + PADDLE_HEIGHT + BALL_RADIUS && ball.x - BALL_RADIUS <= paddle1.x + PADDLE_WIDTH) {
+        ball.speedX = -ball.speedX;
+        ball.speedY += (ball.y - (paddle1.y + PADDLE_HEIGHT / 2)) / PADDLE_HEIGHT * 2 * BALL_SPEED;
+      }
+      if (ball.y > paddle2.y - BALL_RADIUS && ball.y < paddle2.y + PADDLE_HEIGHT + BALL_RADIUS && ball.x + BALL_RADIUS >= paddle2.x) {
+        ball.speedX = -ball.speedX;
+        ball.speedY += (ball.y - (paddle2.y + PADDLE_HEIGHT / 2)) / PADDLE_HEIGHT * 2 * BALL_SPEED;
       }
 
-      // Bounce the ball off the paddles
-      if (ball.x - ball.radius < paddle1.x + paddle1.width && 
-          ball.y > paddle1.y && 
-          ball.y < paddle1.y + paddle1.height) {
-        ball.speedX *= -1;
-        ball.x = paddle1.x + paddle1.width + ball.radius; // Prevent the ball from getting stuck inside the paddle
-        ball.speedY += Math.random() * 2 - 1; // Add some randomness to the bounce angle
-        ball.speedX *= 1.05; // Increase the ball speed slightly after each bounce
-        ball.speedY *= 1.05;
+      // Check for collisions with the top and bottom walls
+      if (ball.y - BALL_RADIUS <= 0 || ball.y + BALL_RADIUS >= canvas.height) {
+        ball.speedY = -ball.speedY;
       }
-        // Reset the ball and update the score if it goes out of bounds
-  if (ball.x - ball.radius < 0) {
-    paddle2.score++;
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.speedX = -BALL_SPEED; // Reverse the direction of the ball
-    ball.speedY = BALL_SPEED;
-  }
 
-  if (ball.x + ball.radius > canvas.width) {
-    paddle1.score++;
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.speedX = BALL_SPEED;
-    ball.speedY = BALL_SPEED;
-  }
-}
+      // Check for collisions with the left and right walls
+      if (ball.x - BALL_RADIUS <= 0) {
+        paddle2.score++;
+        resetBall();
+      }
+      if (ball.x + BALL_RADIUS >= canvas.width) {
+        paddle1.score++;
+        resetBall();
+      }
+    }
 
-// Define a function to draw the game objects
-function draw() {
-  // Clear the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Define a function to reset the ball position and speed
+    function resetBall() {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.speedX = BALL_SPEED;
+      ball.speedY = BALL_SPEED;
+    }
 
-  // Draw the paddles
-  drawRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height, paddle1.color);
-  drawRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height, paddle2.color);
+    // Define a function to render the game objects
+    function render() {
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the ball
-  drawCircle(ball.x, ball.y, ball.radius, ball.color);
+      // Draw the paddles and the ball
+      drawRect(paddle1.x, paddle1.y, PADDLE_WIDTH, PADDLE_HEIGHT, paddle1.color);
+      drawRect(paddle2.x, paddle2.y, PADDLE_WIDTH, PADDLE_HEIGHT, paddle2.color);
+      drawCircle(ball.x, ball.y, BALL_RADIUS, ball.color);
 
-  // Draw the scores
-  drawScore(100, 50, paddle1.score);
-  drawScore(canvas.width - 150, 50, paddle2.score);
-}
+      // Draw the scores
+      drawScore(canvas.width / 4, 50, paddle1.score);
+      drawScore(3 * canvas.width / 4, 50, paddle2.score);
+    }
 
-// Define a function to run the game loop
-function gameLoop() {
-  update();
-  draw();
-  requestAnimationFrame(gameLoop);
-}
+    // Define the main game loop
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
 
-// Start the game loop
-gameLoop();
-</script>
+    // Start the game loop
+    gameLoop();
+  </script>
 </body>
+
 </html>
