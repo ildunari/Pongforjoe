@@ -11,34 +11,42 @@
       height: 100vh;
       margin: 0;
     }
-
+  
     canvas {
       border: 1px solid black;
     }
-
+  
     button {
       font-size: 18px;
       padding: 10px; /* Add padding to make buttons the same size as the text */
+      position: relative;
+      bottom: 10%;
     }
-
+  
+    div {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+  
     /* Default styles for larger screens */
     canvas {
       width: 600px;
       height: 400px;
     }
-
+  
     button {
       width: 80px;
       height: 80px;
     }
-
+  
     /* Styles for smaller screens */
     @media (max-width: 600px) {
       canvas {
         width: 300px;
         height: 200px;
       }
-
+  
       button {
         width: 60px;
         height: 60px;
@@ -120,20 +128,20 @@
 
     // Add event listeners for touchstart and touchend events
     upButton.addEventListener("touchstart", function() {
-      upPressed = true;
-    });
+  keys[UP_ARROW] = true;
+});
 
-    upButton.addEventListener("touchend", function() {
-      upPressed = false;
-    });
+upButton.addEventListener("touchend", function() {
+  keys[UP_ARROW] = false;
+});
 
-    downButton.addEventListener("touchstart", function() {
-      downPressed = true;
-    });
+downButton.addEventListener("touchstart", function() {
+  keys[DOWN_ARROW] = true;
+});
 
-    downButton.addEventListener("touchend", function() {
-      downPressed = false;
-    });
+downButton.addEventListener("touchend", function() {
+  keys[DOWN_ARROW] = false;
+});
 
     // Define a function to draw a rectangle
     function drawRect(x, y, width, height, color) {
